@@ -3,6 +3,7 @@
 // Conways Game of Life 
 //
 
+#include <string>
 #include <cstdlib>
 #include <cmath>
 #include <iostream>
@@ -18,6 +19,24 @@ int main()
     sf::RenderWindow window(sf::VideoMode(conf::window_size), "Conways Game of Life");
     window.setFramerateLimit(conf::max_framerate);
 
+    sf::RenderWindow statsWindow(sf::VideoMode(conf::stats_window_size), "Game Statistics");
+    statsWindow.setFramerateLimit(conf::max_framerate);
+    statsWindow.setPosition({window.getPosition().x - static_cast<int>(conf::stats_window_size.x), window.getPosition().y});
+    sf::Font statsFont("RobotoMono-VariableFont_wght.ttf"); 
+    
+    sf::Clock statsClock;
+
+    sf::Text generationCount(statsFont);
+    generationCount.setCharacterSize(conf::text_size);
+
+    sf::Text computeTime(statsFont);
+    computeTime.setCharacterSize(conf::text_size);
+    computeTime.setPosition({0, conf::text_size});
+
+    sf::Text renderTime(statsFont);
+    renderTime.setCharacterSize(conf::text_size);
+    renderTime.setPosition({0, conf::text_size * 2});
+
     // charcoal gray
     sf::Color grey = {54, 69, 79};
 
@@ -31,6 +50,8 @@ int main()
     
 
     /// Build the grid
+
+    std::vector<int> updatedCells;
 
     std::vector<std::vector<int>> lifeGrid(conf::board_size.y + 2, std::vector<int>(conf::board_size.x + 2, 0));
     std::vector<std::vector<int>> lifeGrid_B(conf::board_size.y + 2, std::vector<int>(conf::board_size.x + 2, 0));
@@ -71,7 +92,8 @@ int main()
     int row = 0;
     int collumn = 0;
 
-    for (unsigned int i {}; i < conf::cell_count; i++) { // print board loop
+    // print board to the console
+    for (unsigned int i {}; i < conf::cell_count; i++) { 
         cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
 
         if (i % conf::board_size.x == 0) {
@@ -96,16 +118,23 @@ int main()
     {
         processEvents(window, visualGrid, gamePaused);
 
-        // display the grid
+        // Display the grid
         window.clear();
+
+        statsClock.reset();
+        statsClock.start();
         for (int i {}; i < conf::cell_count; i++) {
 
             window.draw(visualGrid[i]);
         }
         window.display();
+        renderTime.setString("renderTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds()) / 1000).substr(0, 5) + " ms");
 
         // update the cells 
         if (gamePaused == false) {
+            statsClock.reset();
+            statsClock.start();
+
             for (int i {}; i < conf::cell_count; i++) {
                 cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
 
@@ -119,50 +148,6 @@ int main()
                     + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
                     + lifeGrid[cellLookup.x - 1][cellLookup.y];    // middle left
 
-                /*
-                top_left = lifeGrid[cellLookup.x - 1][cellLookup.y - 1];
-                bottom_left = lifeGrid[cellLookup.x - 1][cellLookup.y + 1];
-                top_right = lifeGrid[cellLookup.x + 1][cellLookup.y - 1];
-                bottom_right = lifeGrid[cellLookup.x + 1][cellLookup.y + 1];
-                neighbors = 0;
-                if (!(i % conf::board_size.x == 0)) { // check if possition is NOT on the left wall
-                    // check the 3 neighbors to the left
-                    neighbors +=
-                        lifeGrid[cellLookup.x - 1][cellLookup.y + 1]   // bottom left
-                        + lifeGrid[cellLookup.x - 1][cellLookup.y]     // middle left
-                        + lifeGrid[cellLookup.x - 1][cellLookup.y - 1] // top left
-                        ;
-                }
-
-                if (!((i - conf::board_size.x) < 0)) { // check if position is NOT on the top wall
-                    // check the 3 neighbors above
-                    neighbors +=
-                        lifeGrid[cellLookup.x - 1][cellLookup.y - 1]   // top left
-                        + lifeGrid[cellLookup.x][cellLookup.y - 1]     // top center
-                        + lifeGrid[cellLookup.x + 1][cellLookup.y - 1] // top right
-                        ;
-                }
-
-                if (!((i + 1) % conf::board_size.x == 0)) { // check if position is NOT on the right wall
-                    // check the 3 neighbors to the right
-                    neighbors +=
-                        lifeGrid[cellLookup.x + 1][cellLookup.y - 1]   // top right
-                        + lifeGrid[cellLookup.x + 1][cellLookup.y]     // middle right
-                        + lifeGrid[cellLookup.x + 1][cellLookup.y + 1] // bottom right
-                        ;
-                }
-
-                if (!(i - (conf::board_size.x * conf::board_size.y - conf::board_size.x) >= 0)) { // check if position is NOT on the bottom wall
-                    // check the 3 neighbors below
-                    neighbors +=
-                        lifeGrid[cellLookup.x + 1][cellLookup.y + 1]   // bottom right
-                        + lifeGrid[cellLookup.x][cellLookup.y + 1]     // bottom center
-                        + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
-                        ;
-                }
-                */
-                //std::cout << "board[" << i << "] : " << neighbors << "\n";
-
                 switch (neighbors) {
 
                 case 1: {
@@ -173,6 +158,7 @@ int main()
                 case 2:
                     if (lifeGrid_B[cellLookup.x][cellLookup.y] == 0)
                         break;
+                    [[fallthrough]];
                 case 3: {
                     lifeGrid_B[cellLookup.x][cellLookup.y] = 1;
                     visualGrid[i].setFillColor(sf::Color::White);
@@ -184,9 +170,18 @@ int main()
                 }
                 neighbors = 0;
             }
+            lifeGrid = lifeGrid_B;
+
+            computeTime.setString("computeTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds())/1000).substr(0,5) + " ms");
+            generationCount.setString("generation : " + std::to_string(generation++));
         }
         
-        lifeGrid = lifeGrid_B;
-        generation++;
+        // Display the stats
+
+        statsWindow.clear();
+        statsWindow.draw(generationCount);
+        statsWindow.draw(computeTime);
+        statsWindow.draw(renderTime);
+        statsWindow.display();
     }
 }
