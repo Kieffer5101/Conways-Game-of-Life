@@ -7,7 +7,7 @@
 
 int pressCount = 0;
 
-void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid) {
+void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid, bool& gamePaused) {
 
     while (const auto event = window.pollEvent()){
 
@@ -17,6 +17,10 @@ void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid) {
         else if (event->is<sf::Event::KeyPressed>()) {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
                 window.close();
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
+                gamePaused = !gamePaused;
+                std::cout << "game paused : " << gamePaused << std::endl;
+            }
         }
         else if (const auto* mousePress = event->getIf<sf::Event::MouseButtonPressed>()) {
             if (mousePress->button == sf::Mouse::Button::Left) {

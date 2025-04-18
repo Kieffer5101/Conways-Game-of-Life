@@ -21,7 +21,7 @@ int main()
     // charcoal gray
     sf::Color grey = {54, 69, 79};
 
-    //int boarderOffset = conf::board_size.x+3;
+    bool gamePaused = false;
     sf::Vector2u cellLookup = {0, 0};
     int generation = 0;
     int neighbors = 0;
@@ -94,7 +94,7 @@ int main()
     // main program loop
     while (window.isOpen())
     {
-        processEvents(window, visualGrid);
+        processEvents(window, visualGrid, gamePaused);
 
         // display the grid
         window.clear();
@@ -105,84 +105,85 @@ int main()
         window.display();
 
         // update the cells 
-        
-        for (int i {}; i < conf::cell_count; i++) {
-            cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
+        if (gamePaused == false) {
+            for (int i {}; i < conf::cell_count; i++) {
+                cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
 
-            neighbors +=
-                  lifeGrid[cellLookup.x - 1][cellLookup.y - 1] // top left
-                + lifeGrid[cellLookup.x][cellLookup.y - 1]     // top center
-                + lifeGrid[cellLookup.x + 1][cellLookup.y - 1] // top right
-                + lifeGrid[cellLookup.x + 1][cellLookup.y]     // middle right
-                + lifeGrid[cellLookup.x + 1][cellLookup.y + 1] // bottom right
-                + lifeGrid[cellLookup.x][cellLookup.y + 1]     // bottom center
-                + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
-                + lifeGrid[cellLookup.x - 1][cellLookup.y];    // middle left
-
-            /*
-            top_left = lifeGrid[cellLookup.x - 1][cellLookup.y - 1];
-            bottom_left = lifeGrid[cellLookup.x - 1][cellLookup.y + 1];
-            top_right = lifeGrid[cellLookup.x + 1][cellLookup.y - 1];
-            bottom_right = lifeGrid[cellLookup.x + 1][cellLookup.y + 1];
-            neighbors = 0;
-            if (!(i % conf::board_size.x == 0)) { // check if possition is NOT on the left wall
-                // check the 3 neighbors to the left 
                 neighbors +=
-                    lifeGrid[cellLookup.x - 1][cellLookup.y + 1]   // bottom left
-                    + lifeGrid[cellLookup.x - 1][cellLookup.y]     // middle left 
-                    + lifeGrid[cellLookup.x - 1][cellLookup.y - 1] // top left
-                    ;
-            }
-
-            if (!((i - conf::board_size.x) < 0)) { // check if position is NOT on the top wall
-                // check the 3 neighbors above
-                neighbors +=
-                    lifeGrid[cellLookup.x - 1][cellLookup.y - 1]   // top left 
-                    + lifeGrid[cellLookup.x][cellLookup.y - 1]     // top center 
+                    lifeGrid[cellLookup.x - 1][cellLookup.y - 1] // top left
+                    + lifeGrid[cellLookup.x][cellLookup.y - 1]     // top center
                     + lifeGrid[cellLookup.x + 1][cellLookup.y - 1] // top right
-                    ;
-            }
-
-            if (!((i + 1) % conf::board_size.x == 0)) { // check if position is NOT on the right wall
-                // check the 3 neighbors to the right
-                neighbors +=
-                    lifeGrid[cellLookup.x + 1][cellLookup.y - 1]   // top right
                     + lifeGrid[cellLookup.x + 1][cellLookup.y]     // middle right
                     + lifeGrid[cellLookup.x + 1][cellLookup.y + 1] // bottom right
-                    ;
-            }
-
-            if (!(i - (conf::board_size.x * conf::board_size.y - conf::board_size.x) >= 0)) { // check if position is NOT on the bottom wall
-                // check the 3 neighbors below
-                neighbors +=
-                    lifeGrid[cellLookup.x + 1][cellLookup.y + 1]   // bottom right
                     + lifeGrid[cellLookup.x][cellLookup.y + 1]     // bottom center
                     + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
-                    ;
-            }
-            */
-            //std::cout << "board[" << i << "] : " << neighbors << "\n";
+                    + lifeGrid[cellLookup.x - 1][cellLookup.y];    // middle left
 
-            switch (neighbors) {
+                /*
+                top_left = lifeGrid[cellLookup.x - 1][cellLookup.y - 1];
+                bottom_left = lifeGrid[cellLookup.x - 1][cellLookup.y + 1];
+                top_right = lifeGrid[cellLookup.x + 1][cellLookup.y - 1];
+                bottom_right = lifeGrid[cellLookup.x + 1][cellLookup.y + 1];
+                neighbors = 0;
+                if (!(i % conf::board_size.x == 0)) { // check if possition is NOT on the left wall
+                    // check the 3 neighbors to the left
+                    neighbors +=
+                        lifeGrid[cellLookup.x - 1][cellLookup.y + 1]   // bottom left
+                        + lifeGrid[cellLookup.x - 1][cellLookup.y]     // middle left
+                        + lifeGrid[cellLookup.x - 1][cellLookup.y - 1] // top left
+                        ;
+                }
 
-            case 1: {
-                lifeGrid_B[cellLookup.x][cellLookup.y] = 0;
-                visualGrid[i].setFillColor(sf::Color::Black);
-                break;
-            }
-            case 2:
-                if (lifeGrid_B[cellLookup.x][cellLookup.y] == 0)
+                if (!((i - conf::board_size.x) < 0)) { // check if position is NOT on the top wall
+                    // check the 3 neighbors above
+                    neighbors +=
+                        lifeGrid[cellLookup.x - 1][cellLookup.y - 1]   // top left
+                        + lifeGrid[cellLookup.x][cellLookup.y - 1]     // top center
+                        + lifeGrid[cellLookup.x + 1][cellLookup.y - 1] // top right
+                        ;
+                }
+
+                if (!((i + 1) % conf::board_size.x == 0)) { // check if position is NOT on the right wall
+                    // check the 3 neighbors to the right
+                    neighbors +=
+                        lifeGrid[cellLookup.x + 1][cellLookup.y - 1]   // top right
+                        + lifeGrid[cellLookup.x + 1][cellLookup.y]     // middle right
+                        + lifeGrid[cellLookup.x + 1][cellLookup.y + 1] // bottom right
+                        ;
+                }
+
+                if (!(i - (conf::board_size.x * conf::board_size.y - conf::board_size.x) >= 0)) { // check if position is NOT on the bottom wall
+                    // check the 3 neighbors below
+                    neighbors +=
+                        lifeGrid[cellLookup.x + 1][cellLookup.y + 1]   // bottom right
+                        + lifeGrid[cellLookup.x][cellLookup.y + 1]     // bottom center
+                        + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
+                        ;
+                }
+                */
+                //std::cout << "board[" << i << "] : " << neighbors << "\n";
+
+                switch (neighbors) {
+
+                case 1: {
+                    lifeGrid_B[cellLookup.x][cellLookup.y] = 0;
+                    visualGrid[i].setFillColor(sf::Color::Black);
                     break;
-            case 3: {
-                lifeGrid_B[cellLookup.x][cellLookup.y] = 1;
-                visualGrid[i].setFillColor(sf::Color::White);
-                break;
+                }
+                case 2:
+                    if (lifeGrid_B[cellLookup.x][cellLookup.y] == 0)
+                        break;
+                case 3: {
+                    lifeGrid_B[cellLookup.x][cellLookup.y] = 1;
+                    visualGrid[i].setFillColor(sf::Color::White);
+                    break;
+                }
+                default:
+                    lifeGrid_B[cellLookup.x][cellLookup.y] = 0;
+                    visualGrid[i].setFillColor(sf::Color::Black);
+                }
+                neighbors = 0;
             }
-            default:
-                lifeGrid_B[cellLookup.x][cellLookup.y] = 0;
-                visualGrid[i].setFillColor(sf::Color::Black);
-            }
-            neighbors = 0;
         }
         
         lifeGrid = lifeGrid_B;
