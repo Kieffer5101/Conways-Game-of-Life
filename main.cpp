@@ -3,6 +3,7 @@
 // Conways Game of Life 
 //
 
+#include <thread>
 #include <string>
 #include <cstdlib>
 #include <cmath>
@@ -12,7 +13,9 @@
 #include "configuration.h"
 #include "events.h"
 
+void renderSection(sf::Window& window, std::vector<int> cells) {
 
+}
 
 int main()
 {
@@ -25,17 +28,22 @@ int main()
     sf::Font statsFont("RobotoMono-VariableFont_wght.ttf"); 
     
     sf::Clock statsClock;
+    sf::Clock fpsClock;
 
     sf::Text generationCount(statsFont);
     generationCount.setCharacterSize(conf::text_size);
 
+    sf::Text fpsText(statsFont);
+    fpsText.setCharacterSize(conf::text_size);
+    fpsText.setPosition({0, conf::text_size});
+
     sf::Text computeTime(statsFont);
     computeTime.setCharacterSize(conf::text_size);
-    computeTime.setPosition({0, conf::text_size});
+    computeTime.setPosition({0, conf::text_size * 2});
 
     sf::Text renderTime(statsFont);
     renderTime.setCharacterSize(conf::text_size);
-    renderTime.setPosition({0, conf::text_size * 2});
+    renderTime.setPosition({0, conf::text_size * 3});
 
     // charcoal gray
     sf::Color grey = {54, 69, 79};
@@ -44,6 +52,7 @@ int main()
     sf::Vector2u cellLookup = {0, 0};
     int generation = 0;
     int neighbors = 0;
+    int before = 0;
 
     // seed the random number generator
     std::srand(std::time(0));
@@ -82,6 +91,7 @@ int main()
             lifeGrid[1 + std::floor(i / conf::board_size.x)][1 + (i % conf::board_size.x)] = 0;
             visualGrid[i].setFillColor(sf::Color::Black);
         }
+        updatedCells.push_back(i);
 
         //std::cout << i << " built cell :\nLocation : " << visualGrid[i].getPosition().x << ", " << visualGrid[i].getPosition().y << "\n";
 
@@ -91,26 +101,6 @@ int main()
 
     int row = 0;
     int collumn = 0;
-
-    // print board to the console
-    for (unsigned int i {}; i < conf::cell_count; i++) { 
-        cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
-
-        if (i % conf::board_size.x == 0) {
-            std::cout << "\n";
-            row++;
-        }
-        if (lifeGrid[cellLookup.x][cellLookup.y] == 0) {
-            std::cout << ". ";
-            collumn++;
-        }
-        else {
-            std::cout << "# ";
-            collumn++;
-        }
-    }
-    std::cout << std::endl;
-    std::cout << "Rows : " << row << "\nCollumns : " << collumn/row << std::endl;
     
 
     // main program loop
@@ -121,19 +111,21 @@ int main()
         // Display the grid
         window.clear();
 
-        statsClock.reset();
-        statsClock.start();
-        for (int i {}; i < conf::cell_count; i++) {
+        statsClock.restart();
+        std::cout << 
 
-            window.draw(visualGrid[i]);
-        }
+        //for (int location : updatedCells) {
+        //
+        //    window.draw(visualGrid[location]);
+        //}
+        //
         window.display();
         renderTime.setString("renderTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds()) / 1000).substr(0, 5) + " ms");
 
         // update the cells 
         if (gamePaused == false) {
-            statsClock.reset();
-            statsClock.start();
+            updatedCells.clear();
+            statsClock.restart();
 
             for (int i {}; i < conf::cell_count; i++) {
                 cellLookup = {1 + (i / conf::board_size.x), 1 + (i % conf::board_size.x)};
@@ -147,6 +139,8 @@ int main()
                     + lifeGrid[cellLookup.x][cellLookup.y + 1]     // bottom center
                     + lifeGrid[cellLookup.x - 1][cellLookup.y + 1] // bottom left
                     + lifeGrid[cellLookup.x - 1][cellLookup.y];    // middle left
+
+                before = lifeGrid[cellLookup.x][cellLookup.y];
 
                 switch (neighbors) {
 
@@ -169,17 +163,22 @@ int main()
                     visualGrid[i].setFillColor(sf::Color::Black);
                 }
                 neighbors = 0;
+                
+                if (lifeGrid_B[cellLookup.x][cellLookup.y] != before || lifeGrid_B[cellLookup.x][cellLookup.y] == 1)
+                    updatedCells.push_back(i);
             }
             lifeGrid = lifeGrid_B;
 
-            computeTime.setString("computeTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds())/1000).substr(0,5) + " ms");
             generationCount.setString("generation : " + std::to_string(generation++));
+            computeTime.setString("computeTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds())/1000).substr(0,5) + " ms");
+            fpsText.setString("fps : " + std::to_string(static_cast<int>(1 / fpsClock.restart().asSeconds())));
         }
         
         // Display the stats
 
         statsWindow.clear();
         statsWindow.draw(generationCount);
+        statsWindow.draw(fpsText);
         statsWindow.draw(computeTime);
         statsWindow.draw(renderTime);
         statsWindow.display();
