@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 3.30)
 
 project ("CGoL")
 
-add_executable(SFML_CGoL "main.cpp"  "configuration.h" "events.cpp" "events.h" "oldCode.cpp")
+add_executable(SFML_CGoL "main.cpp"  "configuration.h" "events.cpp" "events.h" "cellBoard.cpp" "cellBoard.h")
 
 set(Debug_Libs 
 	${CMAKE_SOURCE_DIR}/library/sfml-graphics-d.lib
