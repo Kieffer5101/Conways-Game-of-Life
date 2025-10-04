@@ -5,12 +5,12 @@
 #include "events.h"
 
 
-int pressCount = 0;
+void processEvents(sf::Window& window, SimState& simState) {
 
-void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid, bool& gamePaused) {
+    std::cout << std::boolalpha;
 
     while (const auto event = window.pollEvent()){
-
+        
         if (event->is<sf::Event::Closed>())
             window.close();
 
@@ -18,16 +18,30 @@ void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid, bo
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
                 window.close();
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
-                gamePaused = !gamePaused;
-                std::cout << "game paused : " << gamePaused << std::endl;
+                simState.simPaused = !simState.simPaused;
+                simState.stepFrame = false;
+                std::cout << "\nsim paused : " << simState.simPaused << std::endl;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::N) && simState.simPaused) {
+                simState.simPaused = false;
+                simState.stepFrame = true;
+
+                // std::cout << "stepFrame : " << simState.stepFrame << std::endl;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+                simState.reSeed = true;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C)) {
+                simState.clear = true;
             }
         }
-        else if (const auto* mousePress = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mousePress->button == sf::Mouse::Button::Left) {
-                std::cout << "The left button was pressed " << ++pressCount << std::endl;
-                std::cout << "mouse x : " << mousePress->position.x << std::endl;
-                std::cout << "mouse y : " << mousePress->position.y << std::endl;
+        else if (event->is<sf::Event::MouseButtonPressed>()) {
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                simState.mouseHeld = true;
             }
+        }
+        else if (event->is<sf::Event::MouseButtonReleased>()) {
+            simState.mouseHeld = false;
         }
     }
 }

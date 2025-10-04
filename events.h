@@ -2,5 +2,6 @@
 
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include "configuration.h"
 
-void processEvents(sf::Window& window, std::vector<sf::RectangleShape>& grid, bool& gamePaused);
+void processEvents(sf::Window& window, SimState& simState);
