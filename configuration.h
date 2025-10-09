@@ -4,6 +4,7 @@
 #include <SFML/System.hpp>
 
 struct SimState {
+	bool updateCells_Debug = true;
 	bool simPaused = false;
 	bool stepFrame = false;
 	bool mouseHeld = false;

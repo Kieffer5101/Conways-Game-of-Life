@@ -160,7 +160,7 @@ public :
 	}
 	void birthCell(int x_pos, int y_pos) {
 
-		lifeGrid_B[x_pos + 1][y_pos + 1] = 1;
+		lifeGrid_B[y_pos + 1][x_pos + 1] = 1; // x and y are swapped as a backwards fix for some poor planning :(
 		aliveCells.push_back((board_size.x * y_pos) + x_pos);
 		population++;
 	}

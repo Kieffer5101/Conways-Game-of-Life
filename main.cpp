@@ -89,6 +89,11 @@ int main()
     renderTime.setCharacterSize(conf::text_size);
     renderTime.setPosition({0, conf::text_size * 4});
 
+    sf::Text controlsInfo(statsFont);
+    controlsInfo.setCharacterSize(conf::text_size);
+    controlsInfo.setPosition({0, conf::text_size * 5});
+    controlsInfo.setString("\n[Space] - Pause / Play\n[N] - Step Frame\n[C] - Clear\n[R] - Reseed ");
+
     window.requestFocus();
 
     sf::Color gray = {54, 69, 79}; // charcoal gray
@@ -127,10 +132,7 @@ int main()
         }
 
         if (simState.mouseHeld) {
-            std::cout <<
-                "\n Mouse X : " << sf::Mouse::getPosition(window).x << " " << conf::board_size.x << " " << sf::Mouse::getPosition(window).x / conf::board_size.x <<
-                "\n Mouse Y : " << sf::Mouse::getPosition(window).y << std::endl;
-
+            
             // bruteforce way of doing this. I know that there is a simpler way, but I have not yet bothered to work it out.
             for (unsigned int x = 0; x < conf::board_size.x; x++) {
                 for (unsigned int y = 0; y < conf::board_size.y; y++) {
@@ -165,7 +167,9 @@ int main()
             renderTime.setString("renderTime : " + std::to_string(static_cast<float>(statsClock.getElapsedTime().asMicroseconds()) / 1000).substr(0, 5) + " ms");
             statsClock.restart();
             
-            GameOfLife.updateCells();
+            if (simState.updateCells_Debug)
+                GameOfLife.updateCells();
+
             generationCount.setString("generation : " + std::to_string(GameOfLife.getGeneration()));
             populationCount.setString("population : " + std::to_string(GameOfLife.getPopulation()));
 
@@ -181,6 +185,7 @@ int main()
             statsWindow.draw(fpsText);
             statsWindow.draw(computeTime);
             statsWindow.draw(renderTime);
+            statsWindow.draw(controlsInfo);
             statsWindow.display();
 
             
