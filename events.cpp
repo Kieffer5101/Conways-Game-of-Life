@@ -5,7 +5,7 @@
 #include "events.h"
 
 
-void processEvents(sf::Window& window, SimState& simState) {
+void processEvents(sf::Window& window, sf::Window& statsWindow, SimState& simState) {
 
     std::cout << std::boolalpha;
 
@@ -25,8 +25,6 @@ void processEvents(sf::Window& window, SimState& simState) {
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::N) && simState.simPaused) {
                 simState.simPaused = false;
                 simState.stepFrame = true;
-
-                // std::cout << "stepFrame : " << simState.stepFrame << std::endl;
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
                 simState.reSeed = true;
@@ -34,24 +32,42 @@ void processEvents(sf::Window& window, SimState& simState) {
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::C)) {
                 simState.clear = true;
             }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::U)) {
-                simState.updateCells_Debug = !simState.updateCells_Debug;
-                std::cout << "Update Cells : " << simState.updateCells_Debug << std::endl;
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+                simState.buildStatsWindow = true;
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::P)) {
+                simState.pauseOnHold = !simState.pauseOnHold;
             }
         }
         else if (event->is<sf::Event::MouseButtonPressed>()) {
             if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+                if (simState.pauseOnHold)
+                    simState.simPaused = true;
                 simState.mouseHeld = true;
+                simState.mouseKey = 1;
             }
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+            else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Right)) {
+                if (simState.pauseOnHold)
+                    simState.simPaused = true;
+                simState.mouseHeld = true;
+                simState.mouseKey = 2;
+            }
+            else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle)) {
                 std::cout <<
                     "\n Mouse X : " << sf::Mouse::getPosition(window).x <<
                     "\n Mouse Y : " << sf::Mouse::getPosition(window).y << std::endl;
-
             }
         }
         else if (event->is<sf::Event::MouseButtonReleased>()) {
             simState.mouseHeld = false;
+            // simState.simPaused = false;
+            simState.mouseKey = 0;
         }
+    }
+
+    while (const auto statsEvent = statsWindow.pollEvent()) {
+
+        if (statsEvent->is<sf::Event::Closed>())
+            statsWindow.close();
     }
 }
